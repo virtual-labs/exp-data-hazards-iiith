@@ -64,7 +64,7 @@ function simulatePipeline(instructions, latencies) {
                     
                     for (const reg of readSet) {
                         if (writeSet.has(reg)) {
-                            const writebackComplete = prevInstr.stageTimings.Writeback.end + 1;
+                            const writebackComplete = prevInstr.stageTimings.Writeback.end; // Writeback happens in first half of clock cycle
                             
                             if (writebackComplete > startCycle) {
                                 const rawStallCycles = writebackComplete - startCycle;
