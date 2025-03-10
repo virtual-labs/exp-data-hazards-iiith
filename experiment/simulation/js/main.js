@@ -9,6 +9,7 @@ import {
 import { validateRegisterSets } from './utils/registerSets.js';
 import { simulatePipeline, generatePipelineVisualization } from './utils/pipelineScheduler.js';
 import LatencyConfiguration from './components/LatencyConfiguration.js';
+import ForwardingToggle from './components/ForwardingToggle.js';
 import PipelineVisualization from './components/PipelineVisualization.js';
 import StageEntryVisualization from './components/StageEntryVisualization.js';
 import PerformanceMetrics from './components/PerformanceMetrics.js';
@@ -17,6 +18,7 @@ class PipelineSimulatorApp {
     constructor() {
         this.instructions = [];
         this.latencies = { ...DEFAULT_LATENCIES };
+        this.forwardingEnabled = false; // Default: no forwarding
         this.initializeComponents();
         this.setupEventListeners();
         this.setupInstructionBuilder();
@@ -28,6 +30,13 @@ class PipelineSimulatorApp {
             document.getElementById('latency-configuration'),
             this.latencies,
             this.handleLatencyChange.bind(this)
+        );
+
+        // Add forwarding toggle component
+        this.forwardingToggle = new ForwardingToggle(
+            document.getElementById('forwarding-toggle-container'),
+            this.forwardingEnabled,
+            this.handleForwardingToggle.bind(this)
         );
 
         this.pipelineViz = new PipelineVisualization(
@@ -112,6 +121,11 @@ class PipelineSimulatorApp {
 
     handleLatencyChange(newLatencies) {
         this.latencies = newLatencies;
+        this.updateSimulation();
+    }
+
+    handleForwardingToggle(enabled) {
+        this.forwardingEnabled = enabled;
         this.updateSimulation();
     }
 
@@ -205,12 +219,32 @@ class PipelineSimulatorApp {
         }
     
         document.getElementById('simulation-container').classList.remove('hidden');
-        const { timeline, hazards } = simulatePipeline(this.instructions, this.latencies);
+        
+        // Always run simulation with current forwarding setting
+        const { timeline, hazards } = simulatePipeline(
+            this.instructions, 
+            this.latencies, 
+            this.forwardingEnabled
+        );
+        
+        // Always also run the simulation with forwarding disabled for accurate comparison
+        const { timeline: timelineWithoutForwarding, hazards: hazardsWithoutForwarding } = 
+            simulatePipeline(this.instructions, this.latencies, false);
+        
         const visualizedTimeline = generatePipelineVisualization(timeline);
     
-        this.pipelineViz.render(visualizedTimeline);
-        this.stageEntryViz.render(visualizedTimeline);
-        this.performanceMetrics.render(visualizedTimeline, hazards);
+        this.pipelineViz.render(visualizedTimeline, this.forwardingEnabled);
+        this.stageEntryViz.render(visualizedTimeline, this.forwardingEnabled);
+        
+        // Pass both simulation results to the metrics component
+        this.performanceMetrics.render(
+            visualizedTimeline, 
+            hazards, 
+            this.forwardingEnabled,
+            generatePipelineVisualization(timelineWithoutForwarding),
+            hazardsWithoutForwarding
+        );
+        
         this.updateInstructionList(); // Make sure instruction list is always in sync
     }
 }

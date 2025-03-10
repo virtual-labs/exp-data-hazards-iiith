@@ -1,12 +1,13 @@
 // js/components/PerformanceMetrics.js
 import { PIPELINE_STAGES, HAZARD_TYPES } from '../utils/types.js';
+import { UI_COLORS, CSS_CLASSES } from '../utils/uiConstants.js';
 
 class PerformanceMetrics {
     constructor(container) {
         this.container = container;
     }
 
-    calculateMetrics(timeline, hazards) {
+    calculateMetrics(timeline, hazards, forwardingEnabled) {
         // Calculate total cycles
         const maxCycle = Math.max(
             ...timeline.flatMap(t => t.stages.map(s => s.cycle))
@@ -26,10 +27,18 @@ class PerformanceMetrics {
         
         const totalStalls = Object.values(stallsByType).reduce((a, b) => a + b, 0);
 
-        // Calculate ideal cycles (pipeline stages × instructions)
-        const idealCycles = totalInstructions * PIPELINE_STAGES.length;
+        // Calculate ideal cycles - in a perfect pipeline:
+        // First instruction takes PIPELINE_STAGES.length cycles
+        // Each subsequent instruction takes 1 cycle
+        const idealCycles = totalInstructions > 0 ? 
+            PIPELINE_STAGES.length + (totalInstructions - 1) : 0;
+            
         const stallPercentage = maxCycle > 0 ? 
             (totalStalls / maxCycle) * 100 : 0;
+
+        // Count forwarded data paths
+        const forwardingPaths = timeline.flatMap(t => t.forwardingPaths || []);
+        const forwardingCount = forwardingPaths.length;
 
         return {
             maxCycle,
@@ -38,21 +47,54 @@ class PerformanceMetrics {
             stallsByType,
             totalStalls,
             idealCycles,
-            stallPercentage
+            stallPercentage,
+            forwardingCount,
+            forwardingEnabled
         };
     }
 
-    render(timeline, hazards) {
-        const metrics = this.calculateMetrics(timeline, hazards);
+    render(
+        timeline, 
+        hazards, 
+        forwardingEnabled = false, 
+        timelineWithoutForwarding = null, 
+        hazardsWithoutForwarding = null
+    ) {
+        // Calculate metrics for current simulation
+        const metrics = this.calculateMetrics(timeline, hazards, forwardingEnabled);
+        
+        // Calculate comparison metrics if needed
+        let comparison = null;
+        
+        if (forwardingEnabled && timelineWithoutForwarding && hazardsWithoutForwarding) {
+            // Calculate metrics for the non-forwarding simulation
+            const metricsWithoutForwarding = this.calculateMetrics(
+                timelineWithoutForwarding, 
+                hazardsWithoutForwarding, 
+                false
+            );
+            
+            // Calculate differences
+            const cycleReduction = metricsWithoutForwarding.maxCycle - metrics.maxCycle;
+            const percentReduction = metricsWithoutForwarding.maxCycle > 0 ?
+                (cycleReduction / metricsWithoutForwarding.maxCycle) * 100 : 0;
+            
+            comparison = {
+                cycleReduction,
+                percentReduction,
+                cpiReduction: metricsWithoutForwarding.cpi - metrics.cpi,
+                stallReduction: metricsWithoutForwarding.totalStalls - metrics.totalStalls,
+                withoutForwardingCycles: metricsWithoutForwarding.maxCycle
+            };
+        }
 
         this.container.innerHTML = `
-            <div class="card">
-                <div class="card-content">
-                    <h2 class="text-xl font-bold mb-4 flex items-center gap-2">
+            <div class="${CSS_CLASSES.CARD}">
+                <div class="${CSS_CLASSES.CARD_CONTENT}">
+                    <h2 class="${CSS_CLASSES.TITLE}">
                         Performance Metrics
-                        <svg class="w-5 h-5" viewBox="0 0 24 24">
-                            <path fill="currentColor" d="M13,9H11V7H13M13,17H11V11H13M12,2A10,10 0 0,0 2,12A10,10 0 0,0 12,22A10,10 0 0,0 22,12A10,10 0 0,0 12,2Z" />
-                        </svg>
+                        ${forwardingEnabled ? 
+                            `<span class="${CSS_CLASSES.BADGE.FORWARDING}">Forwarding Enabled</span>` : ''}
                     </h2>
                     <div class="grid grid-cols-2 md:grid-cols-3 gap-4">
                         <div class="p-4 bg-gray-50 rounded-lg">
@@ -60,6 +102,8 @@ class PerformanceMetrics {
                             <div class="text-2xl font-bold">${metrics.maxCycle}</div>
                             <div class="text-xs text-gray-500">
                                 Ideal: ${metrics.idealCycles}
+                                ${comparison && comparison.cycleReduction > 0 ? 
+                                    `<span class="text-green-600 ml-1">↓${comparison.cycleReduction} vs. ${comparison.withoutForwardingCycles} (${comparison.percentReduction.toFixed(1)}%)</span>` : ''}
                             </div>
                         </div>
                         <div class="p-4 bg-gray-50 rounded-lg">
@@ -69,17 +113,30 @@ class PerformanceMetrics {
                         <div class="p-4 bg-gray-50 rounded-lg">
                             <div class="text-sm text-gray-500">CPI</div>
                             <div class="text-2xl font-bold">${metrics.cpi.toFixed(2)}</div>
-                            <div class="text-xs text-gray-500">Ideal: 1.00</div>
+                            <div class="text-xs text-gray-500">
+                                Ideal: 1.00
+                                ${comparison && comparison.cpiReduction > 0 ? 
+                                    `<span class="text-green-600 ml-1">↓${comparison.cpiReduction.toFixed(2)}</span>` : ''}
+                            </div>
                         </div>
                         <div class="p-4 bg-gray-50 rounded-lg">
                             <div class="text-sm text-gray-500">Total Stalls</div>
                             <div class="text-2xl font-bold">${metrics.totalStalls}</div>
                             <div class="text-xs text-gray-500">
                                 ${metrics.stallPercentage.toFixed(1)}% of cycles
+                                ${comparison && comparison.stallReduction > 0 ? 
+                                    `<span class="text-green-600 ml-1">↓${comparison.stallReduction}</span>` : ''}
                             </div>
                         </div>
+                        ${forwardingEnabled ? `
+                            <div class="p-4 bg-gray-50 rounded-lg">
+                                <div class="text-sm text-gray-500">Forwarding Paths</div>
+                                <div class="text-2xl font-bold">${metrics.forwardingCount}</div>
+                                <div class="text-xs text-gray-500">Data values forwarded</div>
+                            </div>
+                        ` : ''}
                         ${Object.keys(metrics.stallsByType).length > 0 ? `
-                            <div class="p-4 bg-gray-50 rounded-lg col-span-2">
+                            <div class="p-4 bg-gray-50 rounded-lg ${forwardingEnabled ? 'col-span-1' : 'col-span-2'}">
                                 <div class="text-sm text-gray-500">Stalls by Type</div>
                                 <div class="mt-2 space-y-1">
                                     ${HAZARD_TYPES.map(type => 

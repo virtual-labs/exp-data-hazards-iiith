@@ -19,29 +19,56 @@ function isValidRegister(reg) {
  * @returns {Object} Object containing readSet and writeSet
  */
 function getRegisterSets(instruction) {
-    const readSet = new Set();
-    const writeSet = new Set();
+    const readSet = [];
+    const writeSet = [];
+    const {readOperands, writeOperands} = getRegisterOperands(instruction);
+    
+    readOperands.forEach(operand => {
+        if (instruction[operand]) {
+            readSet.push(instruction[operand]);
+        }
+    });
+    
+    writeOperands.forEach(operand => {
+        if (instruction[operand]) {
+            writeSet.push(instruction[operand]);
+        }
+    });
+
+    return { 
+        readSet: new Set(readSet), 
+        writeSet: new Set(writeSet) 
+    };
+}
+
+/**
+ * Gets the read and write operands for an instruction
+ * @param {Object} instruction - Instruction to analyze
+ * @returns {Object} Object containing readOperands and writeOperands
+ */
+function getRegisterOperands(instruction) {
+    const readOperands = new Set();
+    const writeOperands = new Set();
 
     switch(instruction.type) {
         case 'ADD':
         case 'SUB':
         case 'MUL':
         case 'DIV':
-            if (instruction.rs1) readSet.add(instruction.rs1);
-            if (instruction.rs2) readSet.add(instruction.rs2);
-            if (instruction.rd) writeSet.add(instruction.rd);
+            if (instruction.rs1) readOperands.add('rs1');
+            if (instruction.rs2) readOperands.add('rs2');
+            if (instruction.rd) writeOperands.add('rd');
             break;
         case 'LOAD':
-            if (instruction.rs1) readSet.add(instruction.rs1);  // Base register
-            if (instruction.rd) writeSet.add(instruction.rd);
+            if (instruction.rs1) readOperands.add('rs1');  // Base register
+            if (instruction.rd) writeOperands.add('rd');
             break;
         case 'STORE':
-            if (instruction.rs1) readSet.add(instruction.rs1);  // Base register
-            if (instruction.rs2) readSet.add(instruction.rs2);  // Value to store
+            if (instruction.rs1) readOperands.add('rs1');  // Base register
+            if (instruction.rs2) readOperands.add('rs2');  // Value to store
             break;
     }
-
-    return { readSet, writeSet };
+    return {readOperands, writeOperands};
 }
 
 /**
@@ -116,5 +143,6 @@ function validateRegisterSets(instruction) {
 export {
     isValidRegister,
     getRegisterSets,
+    getRegisterOperands,
     validateRegisterSets
 };

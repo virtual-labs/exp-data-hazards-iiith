@@ -30,6 +30,7 @@ const DEFAULT_LATENCIES = {
 
 // Stage Availability Configuration
 const STAGE_AVAILABILITY = {
+    // When source operands are read
     READ: {
         'ADD': 'Decode',
         'SUB': 'Decode',
@@ -38,6 +39,7 @@ const STAGE_AVAILABILITY = {
         'LOAD': 'Decode',
         'STORE': 'Decode'
     },
+    // When destination is written
     WRITE: {
         'ADD': 'Writeback',
         'SUB': 'Writeback',
@@ -45,7 +47,34 @@ const STAGE_AVAILABILITY = {
         'DIV': 'Writeback',
         'LOAD': 'Writeback',
         'STORE': 'Memory'  // STORE completes in Memory stage
+    },
+    // When results are available with forwarding
+    FORWARDING_RESULT_AVAILABLE: {
+        'ADD': 'Execute',
+        'SUB': 'Execute',
+        'MUL': 'Execute',
+        'DIV': 'Execute', 
+        'LOAD': 'Memory',
+        'STORE': null  // STORE doesn't produce a register result
     }
+};
+
+// Register File Timing
+const REGISTER_FILE_TIMING = {
+    // Register file allows write in first half of cycle, read in second half
+    WRITE_BEFORE_READ_SAME_CYCLE: true
+};
+
+// Forwarding Configuration
+const FORWARDING_CONFIG = {
+    // Special cases for operand timing with forwarding
+    OPERAND_NEEDED_STAGE: {
+        'STORE': {
+            'rs2': 'Memory'    // Value to store needed at Memory
+        }
+    },
+
+    DEFAULT_OPERAND_NEEDED_STAGE: PIPELINE_STAGES[2] // Execute
 };
 
 // Helper Functions
@@ -62,12 +91,16 @@ function getStageIndex(stage) {
 }
 
 function formatInstruction(instruction) {
+    if (!instruction || !instruction.type) {
+        return 'Invalid instruction';
+    }
+    
     if (instruction.type === 'LOAD') {
-        return `${instruction.type} ${instruction.rd}, ${instruction.offset}(${instruction.rs1})`;
+        return `${instruction.type} ${instruction.rd || '?'}, ${instruction.offset || '0'}(${instruction.rs1 || '?'})`;
     } else if (instruction.type === 'STORE') {
-        return `${instruction.type} ${instruction.rs2}, ${instruction.offset}(${instruction.rs1})`;
+        return `${instruction.type} ${instruction.rs2 || '?'}, ${instruction.offset || '0'}(${instruction.rs1 || '?'})`;
     } else {
-        return `${instruction.type} ${instruction.rd}, ${instruction.rs1}, ${instruction.rs2}`;
+        return `${instruction.type} ${instruction.rd || '?'}, ${instruction.rs1 || '?'}, ${instruction.rs2 || '?'}`;
     }
 }
 
@@ -82,6 +115,8 @@ export {
     REGISTERS,
     DEFAULT_LATENCIES,
     STAGE_AVAILABILITY,
+    REGISTER_FILE_TIMING,
+    FORWARDING_CONFIG,
     isMemoryInstruction,
     isComputeInstruction,
     getStageIndex,

@@ -1,5 +1,6 @@
 // js/components/StageEntryVisualization.js
 import { PIPELINE_STAGES, formatInstruction } from '../utils/types.js';
+import { UI_COLORS, CSS_CLASSES } from '../utils/uiConstants.js';
 
 class StageEntryVisualization {
     constructor(container) {
@@ -11,57 +12,89 @@ class StageEntryVisualization {
         return stageEntry ? stageEntry.cycle.toString() : '-';
     }
 
-    getHazardRemarks(stages) {
+    getHazardRemarks(stages, forwardingPaths) {
         const hazards = stages
             .filter(s => s.stage === 'Stall' && s.hazard)
             .map(s => s.hazard);
         
-        if (hazards.length === 0) {
+        if (hazards.length === 0 && (!forwardingPaths || forwardingPaths.length === 0)) {
             return 'None';
         }
 
-        console.log(hazards)
+        let remarks = '';
 
-        // Create a Map to track unique hazards and their total stall cycles
-        const uniqueHazards = new Map();
-        
-        hazards.forEach(hazard => {
-            const key = JSON.stringify({
-                type: hazard.type,
-                reg: hazard.reg,
-                producerIndex: hazard.producerIndex
+        // Add hazard information
+        if (hazards.length > 0) {
+            // Create a Map to track unique hazards and their total stall cycles
+            const uniqueHazards = new Map();
+            
+            hazards.forEach(hazard => {
+                const key = JSON.stringify({
+                    type: hazard.type,
+                    reg: hazard.reg,
+                    producerIndex: hazard.producerIndex
+                });
+                
+                if (!uniqueHazards.has(key)) {
+                    uniqueHazards.set(key, { ...hazard });
+                }
+            });
+
+            remarks += `<div class="text-sm font-medium ${UI_COLORS.HAZARD_HEADING} mt-1">Hazards:</div>`;
+
+            remarks += `<ul class="list-disc pl-4 space-y-1">
+                ${Array.from(uniqueHazards.values()).map(hazard => {
+                    let description = '';
+                    if (hazard.type === 'RAW') {
+                        description = `RAW hazard: Waiting for ${hazard.reg} from instruction ${hazard.producerIndex + 1} (${hazard.stallCycles} cycles)`;
+                        if (hazard.forwarded) {
+                            description += ` <span class="${UI_COLORS.FORWARDING}">(reduced by forwarding)</span>`;
+                        }
+                    } else if (hazard.type === 'Structural') {
+                        description = `Structural hazard: Waiting for instruction ${hazard.producerIndex + 1} to advance (${hazard.stallCycles} cycles)`;
+                    } else {
+                        description = `${hazard.type} hazard (${hazard.stallCycles} cycles)`;
+                    }
+                    return `<li class="text-sm">${description}</li>`;
+                }).join('')}
+            </ul>`;
+        }
+
+        // Add forwarding information - group by register to avoid duplicates
+        if (forwardingPaths && forwardingPaths.length > 0) {
+            remarks += `${hazards.length > 0 ? '<div class="mt-2"></div>' : ''}
+            <div class="text-sm font-medium ${UI_COLORS.FORWARDING} mt-1">Data Forwarding:</div>
+            <ul class="list-disc pl-4 space-y-1">`;
+            
+            // Group forwarding paths by register
+            const forwardingByReg = {};
+            forwardingPaths.forEach(path => {
+                if (!forwardingByReg[path.register]) {
+                    forwardingByReg[path.register] = path;
+                }
             });
             
-            if (!uniqueHazards.has(key)) {
-                uniqueHazards.set(key, { ...hazard });
-            }
-        });
+            // Create list items for each unique register forwarding
+            Object.values(forwardingByReg).forEach(path => {
+                remarks += `<li class="text-sm">
+                    ${path.register} from instruction ${path.from + 1} (${path.fromStage}) to ${path.toStage} in cycle ${path.cycle}
+                </li>`;
+            });
+            
+            remarks += `</ul>`;
+        }
 
-        console.log(uniqueHazards)
-        return `<ul class="list-disc pl-4 space-y-1">
-            ${Array.from(uniqueHazards.values()).map(hazard => {
-                let description = '';
-                if (hazard.type === 'RAW') {
-                    description = `RAW hazard: Waiting for ${hazard.reg} from instruction ${hazard.producerIndex + 1} (${hazard.stallCycles} cycles)`;
-                } else if (hazard.type === 'Structural') {
-                    description = `Structural hazard: Waiting for instruction ${hazard.producerIndex + 1} to advance (${hazard.stallCycles} cycles)`;
-                } else {
-                    description = `${hazard.type} hazard (${hazard.stallCycles} cycles)`;
-                }
-                return `<li class="text-sm">${description}</li>`;
-            }).join('')}
-        </ul>`;
+        return remarks;
     }
 
-    render(timeline) {
+    render(timeline, forwardingEnabled = false) {
         this.container.innerHTML = `
-            <div class="card mb-4 overflow-x-auto">
-                <div class="p-6">
-                    <h2 class="text-xl font-bold mb-4 flex items-center gap-2">
+            <div class="${CSS_CLASSES.CARD}">
+                <div class="${CSS_CLASSES.CARD_CONTENT}">
+                    <h2 class="${CSS_CLASSES.TITLE}">
                         Stage Entry Cycles
-                        <svg class="w-5 h-5 text-gray-500" viewBox="0 0 24 24">
-                            <path fill="currentColor" d="M13,9H11V7H13M13,17H11V11H13M12,2A10,10 0 0,0 2,12A10,10 0 0,0 12,22A10,10 0 0,0 22,12A10,10 0 0,0 12,2Z" />
-                        </svg>
+                        ${forwardingEnabled ? 
+                            `<span class="${CSS_CLASSES.BADGE.FORWARDING}">Forwarding Enabled</span>` : ''}
                     </h2>
                     <table class="min-w-full border-collapse">
                         <thead>
@@ -87,7 +120,7 @@ class StageEntryVisualization {
                                         </td>
                                     `).join('')}
                                     <td class="border p-2">
-                                        ${this.getHazardRemarks(item.stages)}
+                                        ${this.getHazardRemarks(item.stages, forwardingEnabled ? item.forwardingPaths : [])}
                                     </td>
                                 </tr>
                             `).join('')}

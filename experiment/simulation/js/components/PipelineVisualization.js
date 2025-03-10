@@ -1,5 +1,6 @@
 // js/components/PipelineVisualization.js
-import { formatInstruction } from '../utils/types.js';
+import { formatInstruction, PIPELINE_STAGES } from '../utils/types.js';
+import { UI_COLORS, UI_ICONS, CSS_CLASSES } from '../utils/uiConstants.js';
 
 class PipelineVisualization {
     constructor(container) {
@@ -7,36 +8,38 @@ class PipelineVisualization {
     }
 
     getHazardStyle(type) {
-        const styles = {
-            'RAW': 'bg-red-100 text-red-800',
-            'WAW': 'bg-yellow-100 text-yellow-800',
-            'Structural': 'bg-purple-100 text-purple-800'
-        };
-        return styles[type] || 'bg-orange-100 text-orange-800';
+        return UI_COLORS.HAZARDS[type] || 'bg-orange-100 text-orange-800';
     }
 
-    createStageCell(stage, hazard) {
+    createStageCell(stage, hazard, forwarding = null) {
         if (!stage) {
             return '<td class="border p-2"></td>';
         }
 
-        let bgColor = stage === 'Fetch' ? 'bg-blue-100' :
-                      stage === 'Decode' ? 'bg-green-100' :
-                      stage === 'Execute' ? 'bg-yellow-100' :
-                      stage === 'Memory' ? 'bg-pink-100' :
-                      stage === 'Writeback' ? 'bg-purple-100' : 'bg-gray-100';
+        // Get background color based on stage
+        let bgColor = UI_COLORS.PIPELINE_STAGES[stage];
 
-        if (stage === 'Stall') {
-            bgColor = {
-                'RAW': 'bg-red-100',
-                'WAW': 'bg-yellow-100',
-                'Structural': 'bg-purple-100'
-            }[hazard?.type] || 'bg-gray-100';
+        // For stalls, get color based on hazard type
+        if (stage === 'Stall' && hazard) {
+            bgColor = UI_COLORS.HAZARDS[hazard.type]?.split(' ')[0] || UI_COLORS.PIPELINE_STAGES.Stall;
+        }
+
+        // If there's forwarding, add an indicator
+        let forwardingIndicator = '';
+        let forwardingTooltip = '';
+        
+        if (forwarding?.length) {
+            forwardingIndicator = UI_ICONS.FORWARDING;
+
+            forwardingTooltip = forwarding.map(path => `
+                <div class="font-bold">Forwarding ${path.register}</div>
+                <div>From: Instruction ${path.from + 1} (${path.fromStage})</div>
+                <div>To: Instruction ${path.to + 1} (${stage})</div>
+                `).join('');
         }
 
         const tooltip = hazard ? `
-            <div class="tooltip hidden group-hover:block absolute z-10 -top-full left-1/2 -translate-x-1/2 
-                        p-2 bg-white shadow-lg rounded border text-xs">
+            <div class="${CSS_CLASSES.TOOLTIP}">
                 <div class="font-bold">${hazard.type} Hazard</div>
                 <div class="text-gray-600">
                     ${hazard.type === 'RAW' ? 
@@ -45,7 +48,12 @@ class PipelineVisualization {
                             `Waiting for Instruction ${hazard.producerIndex + 1} to advance` :
                             'Pipeline Hazard'
                     }
+                    ${hazard.forwarded ? `<br><span class="${UI_COLORS.FORWARDING}">Reduced by forwarding</span>` : ''}
                 </div>
+            </div>
+        ` : forwarding ? `
+            <div class="${CSS_CLASSES.TOOLTIP}">
+                ${forwardingTooltip}
             </div>
         ` : '';
 
@@ -53,15 +61,43 @@ class PipelineVisualization {
             <td class="border p-2 text-center ${bgColor} relative group">
                 <div class="flex items-center justify-center gap-1">
                     ${stage}
-                    ${hazard ? '<svg class="w-4 h-4 text-red-500" viewBox="0 0 24 24"><path fill="currentColor" d="M13,13H11V7H13M13,17H11V15H13M12,2A10,10 0 0,0 2,12A10,10 0 0,0 12,22A10,10 0 0,0 22,12A10,10 0 0,0 12,2Z" /></svg>' : ''}
+                    ${hazard ? UI_ICONS.HAZARD : ''}
+                    ${forwardingIndicator}
                 </div>
                 ${tooltip}
             </td>
         `;
     }
 
-    render(timeline) {
-        if (timeline.length === 0) return;
+    findForwardingForCycle(timeline, instrIndex, cycle, stage) {
+        // Skip if no forwarding paths
+        if (!timeline[instrIndex]?.forwardingPaths?.length) {
+            return null;
+        }
+        
+        // Find forwarding path where this instruction is receiving data at this cycle
+        const forwardingPaths = timeline[instrIndex].forwardingPaths;
+        let paths = []
+        for (const path of forwardingPaths) {
+            if (path.cycle === cycle && path.toStage === stage) {
+                paths.push(path);
+            }
+        }
+        
+        return paths;
+    }
+
+    render(timeline, forwardingEnabled = false) {
+        if (!timeline || timeline.length === 0) {
+            this.container.innerHTML = `
+                <div class="${CSS_CLASSES.CARD}">
+                    <div class="${CSS_CLASSES.CARD_CONTENT}">
+                        <p class="text-gray-500">No instructions to display. Add instructions to see the pipeline visualization.</p>
+                    </div>
+                </div>
+            `;
+            return;
+        }
 
         // Find the maximum cycle
         const maxCycle = Math.max(
@@ -69,13 +105,14 @@ class PipelineVisualization {
         );
 
         this.container.innerHTML = `
-            <div class="card mb-4 overflow-x-auto">
-                <div class="p-6">
-                    <h2 class="text-xl font-bold mb-4 flex items-center gap-2">
+            <div class="${CSS_CLASSES.CARD}">
+                <div class="${CSS_CLASSES.CARD_CONTENT}">
+                    <h2 class="${CSS_CLASSES.TITLE}">
                         Pipeline Execution
                         <div class="text-sm font-normal text-gray-500">
-                            (hover over hazards for details)
+                            (hover over ${forwardingEnabled ? 'hazards and forwarding paths' : 'hazards'} for details)
                         </div>
+                        ${forwardingEnabled ? `<span class="${CSS_CLASSES.BADGE.FORWARDING}">Forwarding Enabled</span>` : ''}
                     </h2>
                     <table class="min-w-full border-collapse">
                         <thead>
@@ -96,9 +133,22 @@ class PipelineVisualization {
                                     </td>
                                     ${Array.from({ length: maxCycle }, (_, cycle) => {
                                         const stageInfo = item.stages.find(s => s.cycle === cycle + 1);
+                                        
+                                        // If forwarding is enabled, check for forwarding at this cycle
+                                        let forwarding = null;
+                                        if (forwardingEnabled && stageInfo && stageInfo.stage !== 'Stall') {
+                                            forwarding = this.findForwardingForCycle(
+                                                timeline, 
+                                                item.index, 
+                                                cycle + 1,
+                                                stageInfo.stage
+                                            );
+                                        }
+                                        
                                         return this.createStageCell(
                                             stageInfo?.stage,
-                                            stageInfo?.hazard
+                                            stageInfo?.hazard,
+                                            forwarding
                                         );
                                     }).join('')}
                                 </tr>
