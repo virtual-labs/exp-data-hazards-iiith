@@ -18,3 +18,16 @@ body {
     width: 16px !important;
     height: 16px !important;
 }
+
+/* Sticky column styles */
+.sticky-column {
+    position: sticky;
+    left: 0;
+    z-index: 10;
+    box-shadow: 2px 0 5px rgba(0, 0, 0, 0.1);
+}
+
+.table-container {
+    overflow-x: auto;
+    position: relative;
+}

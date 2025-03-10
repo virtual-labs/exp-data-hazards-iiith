@@ -15,7 +15,7 @@ class ForwardingToggle {
 
     render() {
         this.container.innerHTML = `
-            <div class="card mb-4">
+            <div class="card">
                 <div class="p-6">
                     <div class="flex items-center justify-between">
                         <div class="flex items-center gap-2">
@@ -39,8 +39,8 @@ class ForwardingToggle {
                     </div>
                     <p class="mt-2 text-sm text-gray-600">
                         ${this.forwardingEnabled ? 
-                            'Data forwarding passes values directly between pipeline stages, reducing stalls from RAW hazards. ALU results are forwarded from the Execute stage, and memory values from the Memory stage.' :
-                            'Without forwarding, instructions must wait for results to be written back to the register file before using them, causing more stalls for data hazards.'}
+                            'Data forwarding passes values directly between pipeline stages, reducing stalls from RAW hazards. ALU results are forwarded from the Execute stage onwards, and memory values from the Memory stage onwards.' :
+                            'Without forwarding, instructions must wait for results to be written back to the register file, causing more stalls for data hazards.'}
                     </p>
                 </div>
             </div>

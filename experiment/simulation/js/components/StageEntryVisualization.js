@@ -88,6 +88,17 @@ class StageEntryVisualization {
     }
 
     render(timeline, forwardingEnabled = false) {
+        if (!timeline || timeline.length === 0) {
+            this.container.innerHTML = `
+                <div class="${CSS_CLASSES.CARD}">
+                    <div class="${CSS_CLASSES.CARD_CONTENT}">
+                        <p class="text-gray-500">No instructions to display. Add instructions to see the stage entry visualization.</p>
+                    </div>
+                </div>
+            `;
+            return;
+        }
+
         this.container.innerHTML = `
             <div class="${CSS_CLASSES.CARD}">
                 <div class="${CSS_CLASSES.CARD_CONTENT}">
@@ -96,36 +107,38 @@ class StageEntryVisualization {
                         ${forwardingEnabled ? 
                             `<span class="${CSS_CLASSES.BADGE.FORWARDING}">Forwarding Enabled</span>` : ''}
                     </h2>
-                    <table class="min-w-full border-collapse">
-                        <thead>
-                            <tr>
-                                <th class="border p-2 bg-gray-50">Instruction</th>
-                                ${PIPELINE_STAGES.map(stage => `
-                                    <th class="border p-2 bg-gray-50 min-w-[100px]">
-                                        ${stage}
-                                    </th>
-                                `).join('')}
-                                <th class="border p-2 bg-gray-50 min-w-[300px]">Remarks</th>
-                            </tr>
-                        </thead>
-                        <tbody>
-                            ${timeline.map((item, idx) => `
-                                <tr class="${idx % 2 === 0 ? 'bg-white' : 'bg-gray-50'}">
-                                    <td class="border p-2 font-mono whitespace-nowrap">
-                                        ${idx + 1}. ${formatInstruction(item.instruction)}
-                                    </td>
+                    <div class="table-container">
+                        <table class="min-w-full border-collapse">
+                            <thead>
+                                <tr>
+                                    <th class="border p-2 bg-gray-50 sticky-column min-w-[180px]">Instruction</th>
                                     ${PIPELINE_STAGES.map(stage => `
-                                        <td class="border p-2 text-center">
-                                            ${this.getStageEntryCycle(item.stages, stage)}
-                                        </td>
+                                        <th class="border p-2 bg-gray-50 min-w-[100px]">
+                                            ${stage}
+                                        </th>
                                     `).join('')}
-                                    <td class="border p-2">
-                                        ${this.getHazardRemarks(item.stages, forwardingEnabled ? item.forwardingPaths : [])}
-                                    </td>
+                                    <th class="border p-2 bg-gray-50 min-w-[300px]">Remarks</th>
                                 </tr>
-                            `).join('')}
-                        </tbody>
-                    </table>
+                            </thead>
+                            <tbody>
+                                ${timeline.map((item, idx) => `
+                                    <tr class="${idx % 2 === 0 ? 'bg-white' : 'bg-gray-50'}">
+                                        <td class="border p-2 font-mono whitespace-nowrap sticky-column ${idx % 2 === 0 ? 'bg-white' : 'bg-gray-50'}">
+                                            ${idx + 1}. ${formatInstruction(item.instruction)}
+                                        </td>
+                                        ${PIPELINE_STAGES.map(stage => `
+                                            <td class="border p-2 text-center">
+                                                ${this.getStageEntryCycle(item.stages, stage)}
+                                            </td>
+                                        `).join('')}
+                                        <td class="border p-2">
+                                            ${this.getHazardRemarks(item.stages, forwardingEnabled ? item.forwardingPaths : [])}
+                                        </td>
+                                    </tr>
+                                `).join('')}
+                            </tbody>
+                        </table>
+                    </div>
                 </div>
             </div>
         `;

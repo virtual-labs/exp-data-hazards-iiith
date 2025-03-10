@@ -144,6 +144,11 @@ function simulatePipeline(instructions, latencies, forwardingEnabled = false) {
                         break;
                     }
                 }
+                if (hazardInfo) {
+                    hazards.push(hazardInfo);
+                    currHazards.push(hazardInfo);
+                    hazardInfo = null;
+                }
             }
 
             // Get stage duration based on instruction type and current latencies

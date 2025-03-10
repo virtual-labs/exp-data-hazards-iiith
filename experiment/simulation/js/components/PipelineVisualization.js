@@ -114,51 +114,53 @@ class PipelineVisualization {
                         </div>
                         ${forwardingEnabled ? `<span class="${CSS_CLASSES.BADGE.FORWARDING}">Forwarding Enabled</span>` : ''}
                     </h2>
-                    <table class="min-w-full border-collapse">
-                        <thead>
-                            <tr>
-                                <th class="border p-2 bg-gray-50">Instruction</th>
-                                ${Array.from({ length: maxCycle }, (_, i) => `
-                                    <th class="border p-2 bg-gray-50 min-w-[60px]">
-                                        Cycle ${i + 1}
-                                    </th>
-                                `).join('')}
-                            </tr>
-                        </thead>
-                        <tbody>
-                            ${timeline.map(item => `
+                    <div class="table-container">
+                        <table class="min-w-full border-collapse">
+                            <thead>
                                 <tr>
-                                    <td class="border p-2 font-mono whitespace-nowrap">
-                                        ${item.index + 1}. ${formatInstruction(item.instruction)}
-                                    </td>
-                                    ${Array.from({ length: maxCycle }, (_, cycle) => {
-                                        const stageInfo = item.stages.find(s => s.cycle === cycle + 1);
-                                        
-                                        // If forwarding is enabled, check for forwarding at this cycle
-                                        let forwarding = null;
-                                        if (forwardingEnabled && stageInfo && stageInfo.stage !== 'Stall') {
-                                            forwarding = this.findForwardingForCycle(
-                                                timeline, 
-                                                item.index, 
-                                                cycle + 1,
-                                                stageInfo.stage
-                                            );
-                                        }
-                                        
-                                        return this.createStageCell(
-                                            stageInfo?.stage,
-                                            stageInfo?.hazard,
-                                            forwarding
-                                        );
-                                    }).join('')}
+                                    <th class="border p-2 bg-gray-50 sticky-column min-w-[180px]">Instruction</th>
+                                    ${Array.from({ length: maxCycle }, (_, i) => `
+                                        <th class="border p-2 bg-gray-50 min-w-[60px]">
+                                            Cycle ${i + 1}
+                                        </th>
+                                    `).join('')}
                                 </tr>
-                            `).join('')}
-                        </tbody>
-                    </table>
+                            </thead>
+                            <tbody>
+                                ${timeline.map(item => `
+                                    <tr>
+                                        <td class="border p-2 font-mono whitespace-nowrap bg-white sticky-column">
+                                            ${item.index + 1}. ${formatInstruction(item.instruction)}
+                                        </td>
+                                        ${Array.from({ length: maxCycle }, (_, cycle) => {
+                                            const stageInfo = item.stages.find(s => s.cycle === cycle + 1);
+                                            
+                                            // If forwarding is enabled, check for forwarding at this cycle
+                                            let forwarding = null;
+                                            if (forwardingEnabled && stageInfo && stageInfo.stage !== 'Stall') {
+                                                forwarding = this.findForwardingForCycle(
+                                                    timeline, 
+                                                    item.index, 
+                                                    cycle + 1,
+                                                    stageInfo.stage
+                                                );
+                                            }
+                                            
+                                            return this.createStageCell(
+                                                stageInfo?.stage,
+                                                stageInfo?.hazard,
+                                                forwarding
+                                            );
+                                        }).join('')}
+                                    </tr>
+                                `).join('')}
+                            </tbody>
+                        </table>
+                    </div>
                 </div>
             </div>
         `;
-    }  
+    }
 }
 
 export default PipelineVisualization;
