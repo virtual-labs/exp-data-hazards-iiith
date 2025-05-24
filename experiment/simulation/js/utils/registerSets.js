@@ -120,15 +120,6 @@ function validateRegisterSets(instruction) {
         }
     }
 
-    // Check for overlap between read and write sets
-    const overlap = [...readSet].filter(reg => writeSet.has(reg));
-    if (overlap.length > 0) {
-        return {
-            valid: false,
-            error: `Register ${overlap[0]} cannot be both input and output`
-        };
-    }
-
     // For STORE instructions, check if it's trying to write to registers
     if (instruction.type === 'STORE' && writeSet.size > 0) {
         return {
