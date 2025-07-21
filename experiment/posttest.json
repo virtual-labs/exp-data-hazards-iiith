@@ -2,24 +2,24 @@
   "version": 2.0,
   "questions": [
     {
-      "question": "After learning, what type of data hazard occurs when an instruction needs a value that is yet to be written by a previous instruction?",
+      "question": "In a pipelined processor, what kind of hazard occurs when a read instruction follows too closely after a write to the same register?",
       "answers": {
-        "a": "WAR (Write After Read)",
-        "b": "WAW (Write After Write)",
-        "c": "RAW (Read After Write)",
-        "d": "No hazard"
+        "a": "Structural hazard",
+        "b": "Control hazard",
+        "c": "Data hazard - RAW",
+        "d": "Data hazard - WAW"
       },
       "explanations": {
-        "a": "WAR occurs when a write follows a read, not when a read follows a write.",
-        "b": "WAW involves two writes to the same destination register.",
-        "c": "RAW occurs when a read tries to access a value not yet written. This is the correct answer.",
-        "d": "A dependency exists, so it cannot be no hazard."
+        "a": "Structural hazards occur due to resource conflicts, not data dependencies.",
+        "b": "Control hazards involve branches and instruction flow.",
+        "c": "Correct. A read-after-write (RAW) hazard is a type of data hazard.",
+        "d": "WAW occurs when two writes are issued to the same register."
       },
       "correctAnswer": "c",
       "difficulty": "beginner"
     },
     {
-      "question": "Consider the following instruction sequence:\n1. LOAD R1, 0(R2)\n2. ADD R3, R1, R4\nAfter learning, which type of hazard may occur?",
+      "question": "Consider the following instruction sequence:\n1. LOAD R1, 0(R2)\n2. ADD R3, R1, R4\nWhich type of hazard may occur?",
       "answers": {
         "a": "RAW hazard between instructions 1 and 2",
         "b": "WAW hazard between instructions 1 and 2",
@@ -36,7 +36,7 @@
       "difficulty": "beginner"
     },
     {
-      "question": "After learning, what is the role of instruction scheduling in handling data hazards?",
+      "question": "Which of the following best describes a technique used to reduce data hazards during compile-time?",
       "answers": {
         "a": "To add more hazards to test the pipeline",
         "b": "To randomly shuffle instructions",
@@ -53,7 +53,7 @@
       "difficulty": "beginner"
     },
     {
-      "question": "Given the sequence:\n1. MUL R1, R2, R3\n2. ADD R4, R1, R5\n3. SUB R6, R4, R7\nAfter learning, which pairs of instructions have RAW hazards?",
+      "question": "Identify the hazards in this reordered sequence:\n1. ADD R1, R2, R3\n2. SUB R4, R1, R5\n3. MUL R1, R4, R6",
       "answers": {
         "a": "Only 1 → 2",
         "b": "Only 2 → 3",
@@ -63,65 +63,65 @@
       "explanations": {
         "a": "There is a RAW hazard here, but not the only one.",
         "b": "There is a RAW hazard here, but not the only one.",
-        "c": "Correct. R1 is used by ADD, and R4 is used by SUB, both are RAW hazards.",
-        "d": "Dependencies exist, so RAW hazards are present."
+        "c": "Correct. ADD sets up R1 used by SUB, and SUB sets R4 used by MUL.",
+        "d": "RAW hazards clearly exist."
       },
       "correctAnswer": "c",
       "difficulty": "intermediate"
     },
     {
-      "question": "In a 5-stage pipeline without forwarding, what issue may arise in the following sequence?\n1. MUL R1, R2, R3\n2. DIV R4, R1, R5",
+      "question": "How would a lack of load delay slots affect this instruction pair?\n1. LOAD R1, 0(R2)\n2. ADD R3, R1, R4",
       "answers": {
-        "a": "R4 is written before R1 is read",
-        "b": "DIV may read stale value of R1",
-        "c": "Both instructions are independent",
-        "d": "No hazard exists because they use different operations"
+        "a": "The ADD instruction may execute too early and use stale data.",
+        "b": "The ADD instruction will always execute correctly.",
+        "c": "There will be no performance penalty.",
+        "d": "The processor ignores hazards automatically."
       },
       "explanations": {
-        "a": "R4 is not involved in the dependency.",
-        "b": "Correct. DIV reads R1 before it is written by MUL, leading to a RAW hazard.",
-        "c": "They are dependent due to R1.",
-        "d": "Different operations do not prevent data dependency."
+        "a": "Correct. Without a load delay slot or forwarding, the ADD might use a stale value.",
+        "b": "Not true unless there's forwarding or a delay slot.",
+        "c": "Incorrect; there can be a stall or incorrect result.",
+        "d": "Processors typically do not automatically resolve data hazards."
       },
-      "correctAnswer": "b",
+      "correctAnswer": "a",
       "difficulty": "intermediate"
     },
     {
-      "question": "After learning, which reordering of the following maintains correctness?\nOriginal: ADD R1, R2, R3; SUB R4, R1, R5; MUL R6, R4, R7",
+      "question": "Choose the reordering that avoids data hazards without changing program behavior:\nOriginal: LOAD R1, 0(R2); ADD R3, R1, R4; STORE R3, 0(R5)",
       "answers": {
-        "a": "SUB; ADD; MUL",
-        "b": "ADD; MUL; SUB",
-        "c": "ADD; SUB; MUL",
-        "d": "MUL; SUB; ADD"
+        "a": "ADD; LOAD; STORE",
+        "b": "LOAD; STORE; ADD",
+        "c": "LOAD; ADD; STORE",
+        "d": "STORE; LOAD; ADD"
       },
       "explanations": {
-        "a": "Reordering before dependency resolution leads to hazards.",
-        "b": "MUL uses R4 before it’s ready.",
-        "c": "Correct. This is the original and safe order.",
-        "d": "This breaks both data dependencies."
+        "a": "Incorrect. ADD before LOAD risks stale data.",
+        "b": "STORE before ADD may write uncomputed value.",
+        "c": "Correct. Maintains dependency chain and avoids hazards.",
+        "d": "STORE before needed value is ready will fail."
       },
       "correctAnswer": "c",
       "difficulty": "intermediate"
     },
     {
-      "question": "After learning, what hazard arises when instruction A writes to a register after instruction B reads it?",
+      "question": "In the sequence:\n1. LOAD R1, 0(R2)\n2. STORE R1, 4(R3)\n3. ADD R1, R1, R4\nWhich hazard could occur if instructions are issued without delay?",
       "answers": {
-        "a": "RAW",
-        "b": "WAR",
-        "c": "WAW",
-        "d": "No hazard"
+        "a": "WAR hazard between 2 and 1",
+        "b": "WAW hazard between 1 and 3",
+        "c": "RAW hazard between 1 and 3",
+        "d": "None, because R1 is not reused"
       },
       "explanations": {
-        "a": "This is read after write, not write after read.",
-        "b": "Correct. WAR occurs when a write follows a read to the same register.",
-        "c": "WAW involves two writes, not a read and write.",
-        "d": "A hazard is present due to overlapping accesses."
+        "a": "There’s no read before write to R1 here.",
+        "b": "Only one instruction writes after another, not simultaneously.",
+        "c": "Correct. ADD depends on the result of LOAD.",
+        "d": "Incorrect, R1 is used in all three."
       },
-      "correctAnswer": "b",
+      "correctAnswer": "c",
       "difficulty": "advanced"
     },
     {
-      "question": "After learning, which of the following introduces a WAW hazard?",
+      "question": "Which of the following introduces a WAW hazard?",
       "answers": {
         "a": "1. ADD R1, R2, R3; 2. MUL R1, R4, R5",
         "b": "1. LOAD R1, 0(R2); 2. ADD R3, R1, R4",
@@ -138,7 +138,7 @@
       "difficulty": "advanced"
     },
     {
-      "question": "After learning, what is a correct strategy to eliminate a WAR hazard in a pipeline?",
+      "question": "What is a correct strategy to eliminate a WAR hazard in a pipeline?",
       "answers": {
         "a": "Use forwarding",
         "b": "Delay the read instruction",
