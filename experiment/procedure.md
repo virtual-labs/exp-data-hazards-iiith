@@ -1,3 +1,1 @@
-### Procedure
-
 The experiment will include a pipeline visualization tool that displays the stages (Fetch, Decode, Execute, Memory, Write-back) for a sequence of instructions. When a data hazard is detected, it will be highlighted, and the corresponding stall cycles will be shown. Additionally, a rescheduling panel will allow users to adjust the instruction order and observe the changes in real-time.
