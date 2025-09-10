@@ -1,1 +1,1 @@
-# Data Hazards
+# Data Hazards and Instruction Scheduling
