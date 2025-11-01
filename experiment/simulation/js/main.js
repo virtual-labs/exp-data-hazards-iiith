@@ -121,6 +121,7 @@ class PipelineSimulatorApp {
 
     handleLatencyChange(newLatencies) {
         this.latencies = newLatencies;
+        this.latencyConfig.update(newLatencies); // Update the UI to reflect new latency values
         this.updateSimulation();
     }
 
