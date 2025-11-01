@@ -104,7 +104,11 @@ class LatencyConfiguration {
         // Add reset button handler
         const resetButton = this.container.querySelector('#reset-latencies');
         resetButton.addEventListener('click', () => {
-            this.onLatencyChange(DEFAULT_LATENCIES);
+            // Create a deep copy of DEFAULT_LATENCIES to avoid reference issues
+            const resetLatencies = JSON.parse(JSON.stringify(DEFAULT_LATENCIES));
+            this.latencies = resetLatencies;
+            this.onLatencyChange(resetLatencies);
+            this.render(); // Re-render to update input field values
         });
     }
 
