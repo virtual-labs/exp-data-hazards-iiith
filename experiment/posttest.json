@@ -19,7 +19,7 @@
       "difficulty": "beginner"
     },
     {
-      "question": "Consider the following instruction sequence:\n1. LOAD R1, 0(R2)\n2. ADD R3, R1, R4\nWhich type of hazard may occur?",
+      "question": "Consider the following instruction sequence:<br>1. LOAD R1, 0(R2)<br>2. ADD R3, R1, R4<br>Which type of hazard may occur?",
       "answers": {
         "a": "RAW hazard between instructions 1 and 2",
         "b": "WAW hazard between instructions 1 and 2",
@@ -53,7 +53,7 @@
       "difficulty": "beginner"
     },
     {
-      "question": "Identify the hazards in this reordered sequence:\n1. ADD R1, R2, R3\n2. SUB R4, R1, R5\n3. MUL R1, R4, R6",
+      "question": "Identify the hazards in this reordered sequence:<br>1. ADD R1, R2, R3<br>2. SUB R4, R1, R5<br>3. MUL R1, R4, R6",
       "answers": {
         "a": "Only 1 → 2",
         "b": "Only 2 → 3",
@@ -70,7 +70,7 @@
       "difficulty": "intermediate"
     },
     {
-      "question": "How would a lack of load delay slots affect this instruction pair?\n1. LOAD R1, 0(R2)\n2. ADD R3, R1, R4",
+      "question": "How would a lack of load delay slots affect this instruction pair?<br>1. LOAD R1, 0(R2)<br>2. ADD R3, R1, R4",
       "answers": {
         "a": "The ADD instruction may execute too early and use stale data.",
         "b": "The ADD instruction will always execute correctly.",
@@ -87,7 +87,7 @@
       "difficulty": "intermediate"
     },
     {
-      "question": "Choose the reordering that avoids data hazards without changing program behavior:\nOriginal: LOAD R1, 0(R2); ADD R3, R1, R4; STORE R3, 0(R5)",
+      "question": "Choose the reordering that avoids data hazards without changing program behavior:<br>Original: LOAD R1, 0(R2); ADD R3, R1, R4; STORE R3, 0(R5)",
       "answers": {
         "a": "ADD; LOAD; STORE",
         "b": "LOAD; STORE; ADD",
@@ -104,7 +104,7 @@
       "difficulty": "intermediate"
     },
     {
-      "question": "In the sequence:\n1. LOAD R1, 0(R2)\n2. STORE R1, 4(R3)\n3. ADD R1, R1, R4\nWhich hazard could occur if instructions are issued without delay?",
+      "question": "In the sequence:<br>1. LOAD R1, 0(R2)<br>2. STORE R1, 4(R3)<br>3. ADD R1, R1, R4<br>Which hazard could occur if instructions are issued without delay?",
       "answers": {
         "a": "WAR hazard between 2 and 1",
         "b": "WAW hazard between 1 and 3",
