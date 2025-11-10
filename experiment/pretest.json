@@ -19,7 +19,7 @@
       "difficulty": "beginner"
     },
     {
-      "question": "Consider the following instruction sequence:\n1. LOAD R1, 0(R2)\n2. ADD R3, R1, R4\nWhich type of hazard may occur?",
+      "question": "Consider the following instruction sequence:<br>1. LOAD R1, 0(R2) <br>2. ADD R3, R1, R4<br>Which type of hazard may occur?",
       "answers": {
         "a": "RAW hazard between instructions 1 and 2",
         "b": "WAW hazard between instructions 1 and 2",
@@ -29,7 +29,7 @@
       "explanations": {
         "a": "Instruction 2 reads R1 before instruction 1 writes to it, leading to a RAW hazard.",
         "b": "No writes to the same register, so WAW is not possible.",
-        "c": "There’s no read before write happening here.",
+        "c": "There's no read before write happening here.",
         "d": "There is a dependency, so it's not hazard-free."
       },
       "correctAnswer": "a",
@@ -53,7 +53,7 @@
       "difficulty": "beginner"
     },
     {
-      "question": "Given the sequence:\n1. MUL R1, R2, R3\n2. ADD R4, R1, R5\n3. SUB R6, R4, R7\nWhich pairs of instructions have RAW hazards?",
+      "question": "Given the sequence: <br>1. MUL R1, R2, R3 <br>2. ADD R4, R1, R5 <br>3. SUB R6, R4, R7 <br>Which pairs of instructions have RAW hazards?",
       "answers": {
         "a": "Only 1 → 2",
         "b": "Only 2 → 3",
@@ -70,7 +70,7 @@
       "difficulty": "intermediate"
     },
     {
-      "question": "In a 5-stage pipeline without forwarding, what issue may arise in the following sequence?\n1. MUL R1, R2, R3\n2. DIV R4, R1, R5",
+      "question": "In a 5-stage pipeline without forwarding, what issue may arise in the following sequence? <br>1. MUL R1, R2, R3 <br>2. DIV R4, R1, R5",
       "answers": {
         "a": "R4 is written before R1 is read",
         "b": "DIV may read stale value of R1",
@@ -87,7 +87,7 @@
       "difficulty": "intermediate"
     },
     {
-      "question": "Which reordering of the following maintains correctness?\nOriginal: ADD R1, R2, R3; SUB R4, R1, R5; MUL R6, R4, R7",
+      "question": "Which reordering of the following maintains correctness? <br>Original: <br>ADD R1, R2, R3; <br>SUB R4, R1, R5; <br>MUL R6, R4, R7",
       "answers": {
         "a": "SUB; ADD; MUL",
         "b": "ADD; MUL; SUB",
@@ -96,7 +96,7 @@
       },
       "explanations": {
         "a": "Reordering before dependency resolution leads to hazards.",
-        "b": "MUL uses R4 before it’s ready.",
+        "b": "MUL uses R4 before it's ready.",
         "c": "Correct. This is the original and safe order.",
         "d": "This breaks both data dependencies."
       },
@@ -132,7 +132,7 @@
         "a": "Correct. Both instructions write to R1, possibly causing WAW.",
         "b": "Only one instruction writes to R1.",
         "c": "No WAW since R2 is read, not written again.",
-        "d": "STORE doesn’t write to a register."
+        "d": "STORE doesn't write to a register."
       },
       "correctAnswer": "a",
       "difficulty": "advanced"

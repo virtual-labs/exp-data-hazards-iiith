@@ -1,16 +1,18 @@
-## 📋 **Simulation Instructions**
+### 📋 **Simulation Instructions**
 
 This interactive pipeline simulator helps you visualize data hazards and understand how instruction scheduling and data forwarding affect pipeline performance.
 
 ---
 
-### **Step 1: Build Your Instruction Sequence**
+#### **Step 1: Build Your Instruction Sequence**
 
 1. **Select Instruction Type** from the dropdown menu:
+
    - **Compute Instructions**: ADD, SUB, MUL, DIV
    - **Memory Instructions**: LOAD, STORE
 
 2. **Choose Registers**:
+
    - **Destination (rd)**: Register where the result will be written (not applicable for STORE)
    - **Source 1 (rs1)**: First source register
    - **Source 2 (rs2)**: Second source register (not applicable for LOAD)
@@ -21,6 +23,7 @@ This interactive pipeline simulator helps you visualize data hazards and underst
 4. **Build a sequence** of at least 2-3 instructions to observe data hazards
 
 **Example Sequence to Try:**
+
 ```
 1. ADD R1, R2, R3    (R1 = R2 + R3)
 2. SUB R4, R1, R5    (R4 = R1 - R5)  ← RAW hazard on R1
@@ -29,7 +32,7 @@ This interactive pipeline simulator helps you visualize data hazards and underst
 
 ---
 
-### **Step 2: Configure Instruction Latencies (Optional)**
+#### **Step 2: Configure Instruction Latencies (Optional)**
 
 Each instruction type has configurable execution latencies:
 
@@ -37,22 +40,25 @@ Each instruction type has configurable execution latencies:
 - **Memory Instructions** (LOAD, STORE): Configure Memory stage cycles
 
 **Default Latencies:**
+
 - ADD/SUB: 1 cycle (Execute)
 - MUL: 3 cycles (Execute)
 - DIV: 4 cycles (Execute)
 - LOAD/STORE: 2 cycles (Memory)
 
 **To Modify:**
+
 1. Locate the instruction type in the "Instruction Latencies" section
 2. Change the cycle count in the input field
 3. The simulation updates automatically
 
 **To Reset:**
+
 - Click **"Reset to Defaults"** to restore original latency values
 
 ---
 
-### **Step 3: Toggle Data Forwarding**
+#### **Step 3: Toggle Data Forwarding**
 
 Data forwarding (bypassing) allows results to be passed directly between pipeline stages without waiting for write-back.
 
@@ -60,28 +66,32 @@ Data forwarding (bypassing) allows results to be passed directly between pipelin
 - **Forwarding ON**: Results can be forwarded from Execute/Memory stages, reducing stalls
 
 **To Toggle:**
+
 1. Use the **"Enable Data Forwarding"** checkbox
 2. Observe how the pipeline visualization changes
 3. Compare performance metrics with and without forwarding
 
 ---
 
-### **Step 4: Analyze the Pipeline Visualization**
+#### **Step 4: Analyze the Pipeline Visualization**
 
 Once you add instructions, three visualization panels appear:
 
-#### **A. Pipeline Stage Diagram**
+##### **A. Pipeline Stage Diagram**
+
 - Shows each instruction progressing through pipeline stages (F → D → E → M → W)
 - **Colored cells**: Active execution in that stage
 - **Gray cells (stall)**: Pipeline stall due to data hazard
 - **Hazard indicators**: Red markers show where hazards occur
 
-#### **B. Stage Entry Timeline**
+##### **B. Stage Entry Timeline**
+
 - Displays the cycle number when each instruction enters each stage
 - Helps identify delays and stall patterns
 - Shows the impact of hazards on instruction flow
 
-#### **C. Performance Metrics**
+##### **C. Performance Metrics**
+
 - **Total Cycles**: Total execution time for the instruction sequence
 - **Stall Cycles**: Number of cycles wasted due to hazards
 - **CPI (Cycles Per Instruction)**: Average cycles per instruction
@@ -90,7 +100,7 @@ Once you add instructions, three visualization panels appear:
 
 ---
 
-### **Step 5: Reorder Instructions (Instruction Scheduling)**
+#### **Step 5: Reorder Instructions (Instruction Scheduling)**
 
 You can manually reorder instructions to reduce hazards:
 
@@ -99,6 +109,7 @@ You can manually reorder instructions to reduce hazards:
 3. Observe how reordering affects total cycles and stalls
 
 **Example Optimization:**
+
 ```
 Original (with stalls):
 1. ADD R1, R2, R3
@@ -112,14 +123,14 @@ Optimized (insert independent instruction):
 
 ---
 
-### **Step 6: Remove Instructions**
+#### **Step 6: Remove Instructions**
 
 - Click the **×** button next to any instruction to remove it
 - Click **"Clear All Instructions"** to start over
 
 ---
 
-### **🎯 Learning Objectives**
+#### **🎯 Learning Objectives**
 
 By completing this simulation, you will:
 
@@ -132,7 +143,7 @@ By completing this simulation, you will:
 
 ---
 
-### **💡 Tips for Experimentation**
+#### **💡 Tips for Experimentation**
 
 - Start with simple 2-3 instruction sequences to understand basic hazards
 - Try sequences with multiple dependencies to see cascading stalls
