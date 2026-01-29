@@ -1,0 +1,20 @@
+
+/home/runner/work/exp-data-hazards-iiith/exp-data-hazards-iiith/experiment/simulation/js/components/PerformanceMetrics.js
+  3:10  warning  'UI_COLORS' is defined but never used  no-unused-vars
+
+/home/runner/work/exp-data-hazards-iiith/exp-data-hazards-iiith/experiment/simulation/js/components/PipelineVisualization.js
+  2:29  warning  'PIPELINE_STAGES' is defined but never used  no-unused-vars
+
+/home/runner/work/exp-data-hazards-iiith/exp-data-hazards-iiith/experiment/simulation/js/main.js
+  60:15  warning  'offset' is assigned a value but never used  no-unused-vars
+
+/home/runner/work/exp-data-hazards-iiith/exp-data-hazards-iiith/experiment/simulation/js/utils/pipelineScheduler.js
+    4:5   warning  'getReadStage' is defined but never used          no-unused-vars
+    5:5   warning  'getWriteStage' is defined but never used         no-unused-vars
+   16:5   warning  'STAGE_AVAILABILITY' is defined but never used    no-unused-vars
+   17:5   warning  'FORWARDING_CONFIG' is defined but never used     no-unused-vars
+   18:5   warning  'REGISTER_FILE_TIMING' is defined but never used  no-unused-vars
+  199:11  warning  'maxCycle' is assigned a value but never used     no-unused-vars
+
+✖ 9 problems (0 errors, 9 warnings)
+

@@ -1,0 +1,97 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Pipeline Simulator</title>
+    <!-- Add Tailwind CSS via CDN -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link rel="stylesheet" href="css/main.css">
+</head>
+<body class="bg-gray-100">
+    <div class="container mx-auto p-4 max-w-6xl">
+        <!-- Instruction Builder -->
+        <div class="card mb-4">
+            <div class="card-content">
+                <h2 class="text-xl font-bold mb-4">Build Instruction</h2>
+                <div class="space-y-4">
+                    <div class="flex flex-wrap gap-4">
+                        <select id="instruction-type" class="p-2 border rounded">
+                            <!-- Options added dynamically -->
+                        </select>
+
+                        <select id="rd" class="p-2 border rounded">
+                            <option value="">Destination (rd)</option>
+                        </select>
+
+                        <select id="rs1" class="p-2 border rounded">
+                            <option value="">Source 1 (rs1)</option>
+                        </select>
+
+                        <select id="rs2" class="p-2 border rounded">
+                            <option value="">Source 2 (rs2)</option>
+                        </select>
+
+                        <input type="number" 
+                               id="offset" 
+                               class="p-2 border rounded w-24 hidden" 
+                               placeholder="Offset"
+                               min="-2048"
+                               max="2047">
+                    </div>
+
+                    <div id="validation-error" class="text-red-500 text-sm"></div>
+
+                    <button id="add-instruction" 
+                            class="px-4 py-2 bg-blue-500 text-white rounded hover:bg-blue-600">
+                        Add Instruction
+                    </button>
+                </div>
+            </div>
+        </div>
+
+        <!-- Instruction List -->
+        <div class="card mb-4">
+            <div class="card-content">
+                <h2 class="text-xl font-bold mb-4">Instruction Sequence</h2>
+                <div id="instruction-list" class="space-y-2">
+                    <!-- Instructions added dynamically -->
+                </div>
+            </div>
+        </div>
+
+        <!-- Configuration Controls -->
+        <div class="mb-4">
+            <div id="forwarding-toggle-container"></div>
+        </div>
+        
+        <div class="mb-4">
+            <div id="latency-configuration"></div>
+        </div>
+
+        <!-- Simulation Container -->
+        <div id="simulation-container" class="hidden">
+            <!-- Pipeline Visualization -->
+            <div id="pipeline-visualization"></div>
+
+            <!-- Stage Entry Visualization -->
+            <div id="stage-entry-visualization"></div>
+
+            <!-- Performance Metrics -->
+            <div id="performance-metrics"></div>
+
+            <!-- Clear All Button -->
+            <div class="flex justify-end mt-4">
+                <button id="clear-instructions" 
+                        class="px-4 py-2 bg-red-500 text-white rounded hover:bg-red-600">
+                    Clear All Instructions
+                </button>
+            </div>
+        </div>
+    </div>
+
+    <script type="module" src="js/main.js"></script>
+<script src="../assets/js/iframeResize.js"></script>
+        
+        </body>
+</html>
